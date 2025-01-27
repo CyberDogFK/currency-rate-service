@@ -1,0 +1,32 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-question-table
+      author: antonpavliuk
+      changes:
+        - createTable:
+            tableName: questions
+            columns:
+              - column:
+                  name: id
+                  type: int
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: text
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: answer
+                  type: varchar(255)
+                  defaultValue: "NO ANSWER"
+                  constraints:
+                    nullable: false
+              - column:
+                  name: answer_link
+                  type: varchar(255)
+                  defaultValue: "NO LINK"
+                  constraints:
+                    nullable: false
