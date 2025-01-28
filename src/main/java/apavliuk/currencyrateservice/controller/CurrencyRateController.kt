@@ -1,5 +1,6 @@
 package apavliuk.currencyrateservice.controller
 
+import apavliuk.currencyrateservice.service.CurrenciesService
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
@@ -7,8 +8,12 @@ import reactor.core.publisher.Mono
 
 @RestController
 @RequestMapping("/currency-rates")
-class CurrencyRateController {
+class CurrencyRateController(
+    private val currenciesService: CurrenciesService
+) {
     // /currency-rates
     @GetMapping
-    fun test(): Mono<String> = Mono.just<String>("Hello\n")
+    fun getCurrencyRate(): Mono<String> {
+        return currenciesService.requestCurrencies()
+    }
 }

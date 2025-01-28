@@ -1,10 +1,10 @@
 databaseChangeLog:
   - changeSet:
-      id: create-question-table
+      id: create-historical-rate-table
       author: antonpavliuk
       changes:
         - createTable:
-            tableName: questions
+            tableName: historical_rate
             columns:
               - column:
                   name: id
@@ -14,19 +14,19 @@ databaseChangeLog:
                     primaryKey: true
                     nullable: false
               - column:
-                  name: text
-                  type: varchar(255)
+                  name: currency_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_question_relation
+                    references: questions(id)
+              - column:
+                  name: timestamp
+                  type: bigint
                   constraints:
                     nullable: false
               - column:
-                  name: answer
-                  type: varchar(255)
-                  defaultValue: "NO ANSWER"
-                  constraints:
-                    nullable: false
-              - column:
-                  name: answer_link
-                  type: varchar(255)
-                  defaultValue: "NO LINK"
+                  name: rate
+                  type: number
                   constraints:
                     nullable: false
