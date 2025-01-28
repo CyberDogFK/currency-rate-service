@@ -1,15 +1,15 @@
 package apavliuk.currencyrateservice.service.impl
 
-import apavliuk.currencyrateservice.model.Currency
 import apavliuk.currencyrateservice.repository.CurrencyRepository
 import apavliuk.currencyrateservice.repository.HistoricalRateRepository
 import apavliuk.currencyrateservice.service.CurrenciesService
 import com.fasterxml.jackson.annotation.JsonAlias
-import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.ObjectMapper
-import org.springframework.http.HttpStatus
+import org.slf4j.LoggerFactory
+import org.springframework.core.ParameterizedTypeReference
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
+import org.springframework.web.util.UriBuilder
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.math.BigDecimal
@@ -22,41 +22,49 @@ class CurrenciesServiceImpl(
     private val currencyRepository: CurrencyRepository,
     private val historicalRateRepository: HistoricalRateRepository,
 ): CurrenciesService {
-    override fun requestCurrencies(): Mono<String> {
-        val fiat = URI.create("/fiat-currency-rates")
-        val crypto = URI.create("/crypto-currency-rates")
+    companion object {
+        private val logger = LoggerFactory.getLogger(CurrenciesServiceImpl::class.java)
+    }
 
-        val fiatCryptoCurrency = getCurencyRates(fiat)
+    override fun requestCurrencies(): Mono<CurrenciesRateResponse> {
+        val fiatPath = "/fiat-currency-rates"
+        val cryptoPath = "/crypto-currency-rates"
+
+        val fiatCurrencyRate = getCurencyRates(fiatPath)
 //            .onErrorResume {  }
 //            .flatMap { c ->
 //                currencyRepository.save(Currency(name = c.currency))
 //            }
 //        fiatCryptoCurrency.error
 
-        val cryptoCurencyRates = getCurencyRates(crypto)
-        Flux.zip(fiatCryptoCurrency, cryptoCurencyRates, )
+        val cryptoCurrencyRates = getCurencyRates(cryptoPath)
+//        val result = Flux.zip(fiatCryptoCurrency, cryptoCurencyRates,
+//            {f, c -> CurrencieRateResponse(f, c)}
+//        )
+        val result =
+            Mono.zip(fiatCurrencyRate, cryptoCurrencyRates) { f, c ->
+                logger.info("fiat is ${f}, crypto is $c")
+                CurrenciesRateResponse(f, c)
+            }
 
-
-        val some = listOf("")
-
-        TODO()
+        return result
     }
 
-    val getCurencyRates: (uri: URI) -> Flux<CurrenciesWebServiceResponse> = {
+    fun getCurencyRates(path: String): Mono<List<CurrenciesWebServiceResponse>> =
         webClient.post()
-            .uri("/fiat-currency-rates")
+            .uri { uriBuilder -> uriBuilder.path(path).build() }
             .retrieve()
 //            .onStatus(
 //                { status ->  status.is5xxServerError },
 //                { error ->  Mono.error(RuntimeException()) }
 //            )
-            .bodyToFlux(CurrenciesWebServiceResponse::class.java)
-    }
+            .bodyToMono(object : ParameterizedTypeReference<List<CurrenciesWebServiceResponse>>() {})
+
 }
 
-class CurrencieRateResponse(
+class CurrenciesRateResponse(
     val fiat: List<CurrenciesWebServiceResponse>,
-    val rate: List<CurrenciesWebServiceResponse>
+    val crypto: List<CurrenciesWebServiceResponse>
 )
 
 class CurrenciesWebServiceResponse(
