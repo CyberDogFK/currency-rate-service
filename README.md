@@ -44,7 +44,7 @@ this app will work on port 8085
 ````
 docker-compose up
 ````
-4. Application will be available on port 6868
+4. Application will be available on port 6868, send request: `curl localhost:6868/currency-rates`
 
 - Without Docker
 
@@ -58,8 +58,8 @@ Then run: </br>`export $(cat .env-local | xargs)`</br> to add properties to envi
 ```
 ./mvnw clean package
 ./mvnw spring-boot:run
-````
-5. Application by default uses 8085 port
+```
+5. Application by default uses 8085 port, send request: `curl localhost:8085/currency-rates`
 
 ## Technologies
 
