@@ -7,7 +7,7 @@ import apavliuk.currencyrateservice.model.CurrencyType
 import apavliuk.currencyrateservice.model.HistoricalRate
 import apavliuk.currencyrateservice.repository.CurrencyRepository
 import apavliuk.currencyrateservice.repository.HistoricalRateRepository
-import apavliuk.currencyrateservice.service.CurrenciesService
+import apavliuk.currencyrateservice.service.CurrenciesRateService
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
@@ -18,18 +18,18 @@ import java.time.ZoneId
 import java.util.stream.Collectors
 
 @Service
-class CurrenciesServiceImpl(
+class CurrenciesRateServiceImpl(
     private val webClient: WebClient,
     private val currencyRepository: CurrencyRepository,
     private val historicalRateRepository: HistoricalRateRepository,
-): CurrenciesService {
+): CurrenciesRateService {
     enum class PreparedCurrencyType(val type: CurrencyType, val urlPath: String) {
         Fiat(CurrencyType(1, "fiat"), "/fiat-currency-rates"),
         Crypto(CurrencyType(2, "crypto"), "/crypto-currency-rates")
     }
 
     companion object {
-        private val logger = LoggerFactory.getLogger(CurrenciesServiceImpl::class.java)
+        private val logger = LoggerFactory.getLogger(CurrenciesRateServiceImpl::class.java)
     }
 
     override fun requestCurrencies(): Mono<CurrenciesRateResponse> {
@@ -39,7 +39,6 @@ class CurrenciesServiceImpl(
         val unixTimestamp = LocalDateTime.now()
             .atZone(ZoneId.systemDefault())
             .toEpochSecond()
-
 
         val fiatCurrencyRate = requestCurrencyRates(fiatCurrency.urlPath)
             .flatMap { saveCurrencyFromResponse(it, fiatCurrency.type
@@ -80,12 +79,13 @@ class CurrenciesServiceImpl(
 
     private fun saveCurrencyFromResponse(response: CurrenciesWebServiceResponse, type: CurrencyType, unixTimestamp: Long): Mono<HistoricalRate> =
         currencyRepository.findCurrencyByName(response.currency)
-            .switchIfEmpty(
+            .switchIfEmpty(Mono.defer {
                 // saving new currency
+                logger.info("Saving new currency `${response.currency}` of type `${type.name}`")
                 currencyRepository.save(Currency(name = response.currency, type = type))
-            )
+            })
             .flatMap {
-                logger.info("saving historical rate")
+                logger.info("Saving historical rate")
                 historicalRateRepository.save(HistoricalRate(currency = it,
                     timestamp = unixTimestamp,
                     rate = response.rate))
