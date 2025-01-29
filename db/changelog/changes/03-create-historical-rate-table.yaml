@@ -18,8 +18,8 @@ databaseChangeLog:
                   type: bigint
                   constraints:
                     nullable: false
-                    foreignKeyName: fk_question_relation
-                    references: questions(id)
+                    foreignKeyName: fk_currency_relation
+                    references: currency(id)
               - column:
                   name: timestamp
                   type: bigint

@@ -1,0 +1,36 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-currency-type-table
+      author: antonpavliuk
+      changes:
+        - createTable:
+            tableName: currency_type
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+  - changeSet:
+      id: insert-main-types
+      author: antonpavliuk
+      changes:
+        - insert:
+            tableName: currency_type
+            columns:
+              - column:
+                  name: name
+                  value: fiat
+        - insert:
+            tableName: currency_type
+            columns:
+              - column:
+                  name: name
+                  value: currency

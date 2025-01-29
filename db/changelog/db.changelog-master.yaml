@@ -1,5 +1,7 @@
 databaseChangeLog:
   - include:
-      file: db/changelog/changes/01-create-currency-table.yaml
+      file: db/changelog/changes/01-create-currency-type-table.yaml
   - include:
-      file: db/changelog/changes/02/create-historical-rate-table.yaml
+      file: db/changelog/changes/02-create-currency-table.yaml
+  - include:
+      file: db/changelog/changes/03-create-historical-rate-table.yaml

@@ -1,7 +1,8 @@
 package apavliuk.currencyrateservice.repository
 
 import apavliuk.currencyrateservice.model.HistoricalRate
-import org.springframework.data.repository.reactive.ReactiveCrudRepository
+import reactor.core.publisher.Mono
 
-interface HistoricalRateRepository: ReactiveCrudRepository<HistoricalRate, Long> {
+interface HistoricalRateRepository {
+    fun save(historicalRate: HistoricalRate): Mono<HistoricalRate>
 }

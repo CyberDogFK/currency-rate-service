@@ -1,7 +1,10 @@
 package apavliuk.currencyrateservice.repository
 
 import apavliuk.currencyrateservice.model.Currency
-import org.springframework.data.repository.reactive.ReactiveCrudRepository
+import reactor.core.publisher.Mono
 
-interface CurrencyRepository: ReactiveCrudRepository<Currency, Long> {
+interface CurrencyRepository {
+    fun findCurrencyByName(name: String): Mono<Currency>
+
+    fun save(currency: Currency): Mono<Currency>
 }
