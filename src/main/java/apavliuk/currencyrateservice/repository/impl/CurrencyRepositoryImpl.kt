@@ -19,7 +19,8 @@ class CurrencyRepositoryImpl(
         .bind("name", name)
         .map { row, metadata ->
             Currency(row.get("c_id", Long::class.java), row.get("c_name", String::class.java)!!,
-                CurrencyType(row.get("ct_id", Long::class.java), row.get("ct_name", String::class.java)!!))
+                CurrencyType(row.get("ct_id", Long::class.java), row.get("ct_name", String::class.java)!!)
+            )
         }
         .one()
 

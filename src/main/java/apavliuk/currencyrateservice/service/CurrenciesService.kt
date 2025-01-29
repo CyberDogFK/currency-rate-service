@@ -1,6 +1,6 @@
 package apavliuk.currencyrateservice.service
 
-import apavliuk.currencyrateservice.service.impl.CurrenciesRateResponse
+import apavliuk.currencyrateservice.dto.CurrenciesRateResponse
 import reactor.core.publisher.Mono
 
 interface CurrenciesService {

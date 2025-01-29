@@ -1,6 +1,5 @@
 package apavliuk.currencyrateservice.model
 
-import io.github.joselion.springr2dbcrelationships.annotations.OneToMany
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Column
 import org.springframework.data.relational.core.mapping.Table
@@ -11,5 +10,5 @@ class Currency(
     val id: Long? = null,
     val name: String,
     @Column(value = "type_id")
-    @OneToMany val type: CurrencyType
+    val type: CurrencyType
 )
