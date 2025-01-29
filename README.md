@@ -34,17 +34,22 @@ this app will work on port 8085
 ### Start application
 - Using Docker
 
+
+
 1. Download repo to you computer: </br>
 `git clone git@github.com:CyberDogFK/currency-rate-service.git`
-2. Use
+2. Application uses environment variables to store properties for application
+   So, please, create `.evn-local` file in root directory, following by example from `.env-example` and add DB properties there </br>
+   Then run: </br>`export $(cat .env-local | xargs)`</br> to add properties to environment
+3. Use
 ````
 ./mvnw clean package
 ````
-3. Use, and wait booting
+4. Use, and wait booting
 ````
 docker-compose up
 ````
-4. Application will be available on port 6868, send request: `curl localhost:6868/currency-rates`
+5. Application will be available on port 6868, send request: `curl localhost:6868/currency-rates`
 
 - Without Docker
 
