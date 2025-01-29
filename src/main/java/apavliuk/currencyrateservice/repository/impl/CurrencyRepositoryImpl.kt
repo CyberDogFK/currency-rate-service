@@ -12,13 +12,13 @@ class CurrencyRepositoryImpl(
     private val databaseClient: DatabaseClient
 ): CurrencyRepository {
     override fun findCurrencyByName(name: String): Mono<Currency> =
-        databaseClient.sql("SELECT * FROM currency " +
-            "inner join currency_type on currency.type_id = currency_type.id " +
-            "where currency.name=:name limit 1")
+        databaseClient.sql("SELECT c.id c_id, c.name c_name, c.type_id c_type_id, ct.id ct_id, ct.name ct_name FROM currency c " +
+            "inner join currency_type ct on c.type_id = ct.id " +
+            "where c.name=:name limit 1")
         .bind("name", name)
         .map { row, metadata ->
-            Currency(row.get("currency.id", Long::class.java), row.get("currency.name", String::class.java)!!,
-                CurrencyType(row.get("currency_type.id", Long::class.java), row.get("currency_type.name", String::class.java)!!))
+            Currency(row.get("c_id", Long::class.java), row.get("c_name", String::class.java)!!,
+                CurrencyType(row.get("ct_id", Long::class.java), row.get("ct_name", String::class.java)!!))
         }
         .one()
 
