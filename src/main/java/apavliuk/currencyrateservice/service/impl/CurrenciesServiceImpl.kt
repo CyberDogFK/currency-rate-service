@@ -45,11 +45,22 @@ class CurrenciesServiceImpl(
 
         val fiatCurrencyRate = requestCurrencyRates(fiatPath)
             .flatMap { saveCurrencyFromResponse(it, fiatType, unixTimestamp) }
-            .switchIfEmpty(currencyRepository.findLastCurrency(fiatType))
+            .switchIfEmpty(Flux.defer {
+                val currencies = currencyRepository.findCurrencyByType(fiatType)
+                currencies.flatMap { c ->
+                    historicalRateRepository.finaLastRateForCurrency(c)
+                }
+            })
             .collect(Collectors.toList())
 
         val cryptoCurrencyRates = requestCurrencyRates(cryptoPath)
             .flatMap { saveCurrencyFromResponse(it, cryptoType, unixTimestamp)}
+            .switchIfEmpty(Flux.defer {
+                val currencies = currencyRepository.findCurrencyByType(cryptoType)
+                currencies.flatMap { c ->
+                    historicalRateRepository.finaLastRateForCurrency(c)
+                }
+            })
             .collect(Collectors.toList())
 
         val result = Mono.zip(fiatCurrencyRate, cryptoCurrencyRates) { f, c ->

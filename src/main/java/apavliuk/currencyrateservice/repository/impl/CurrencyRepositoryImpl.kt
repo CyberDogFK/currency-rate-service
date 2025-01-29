@@ -33,7 +33,11 @@ class CurrencyRepositoryImpl(
                 }
             }.next()
 
-    override fun findLastCurrency(type: CurrencyType): Flux<Currency> {
-        databaseClient.sql("")
-    }
+    override fun findCurrencyByType(currencyType: CurrencyType): Flux<Currency> =
+        databaseClient.sql("SELECT * from currency c where c.type_id = :type_id")
+            .bind("type_id", currencyType.id!!)
+            .map { row, metadata ->
+                Currency(row.get("id", Long::class.java), row.get("name", String::class.java)!!,
+                    currencyType)
+            }.all()
 }

@@ -10,5 +10,5 @@ interface CurrencyRepository {
 
     fun save(currency: Currency): Mono<Currency>
 
-    fun findLastCurrency(type: CurrencyType): Flux<Currency>
+    fun findCurrencyByType(currencyType: CurrencyType): Flux<Currency>
 }
