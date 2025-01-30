@@ -105,51 +105,76 @@ class CurrencyRateServiceApplicationTests {
                 .isEqualTo(expected);
     }
 
+    // add test where only one?
+
     @Order(3)
     @Test
     void testRequestOkSaveToEmptyDb() {
-        mockWebServer.setDispatcher(new Dispatcher() {
-            @NotNull
-            @Override
-            public MockResponse dispatch(@NotNull RecordedRequest recordedRequest)
-                    throws InterruptedException {
-                if (recordedRequest.getPath().equals(fiatPath)) {
-                    return new MockResponse().setResponseCode(200)
-                            .setBody(EXAMPLE_RESPONSE_FIAT)
-                            .setHeader("Content-Type", "application/json");
-                } else if (recordedRequest.getPath().equals(cryptoPath)) {
-                    return new MockResponse().setResponseCode(200)
-                            .setBody(EXAMPLE_RESPONSE_CRYPTO)
-                            .setHeader("Content-Type", "application/json");
-                } else {
-                    return new MockResponse().setResponseCode(404);
-                }
-            }
-        });
+        mockWebServer.setDispatcher(getDispatcherForTwoPath(
+                new MockResponse().setResponseCode(200)
+                        .setHeader("Content-Type", "application/json")
+                        .setBody(EXAMPLE_RESPONSE_FIAT),
+                new MockResponse().setResponseCode(200)
+                        .setHeader("Content-Type", "application/json")
+                        .setBody(EXAMPLE_RESPONSE_CRYPTO)
+        ));
 
         webTestClient.get()
                 .uri(ENDPOINT)
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody(CurrenciesRateResponse.class)
-                .value(result -> {
-                    Assertions.assertEquals(result.getFiat().size(), 2);
-                    Assertions.assertEquals(result.getCrypto().size(), 2);
-                    var fiatCurrencies = result.getFiat().stream()
-                            .collect(Collectors.toMap(
-                                    CurrenciesWebServiceResponse::getCurrency,
-                                    CurrenciesWebServiceResponse::getRate));
-                    Assertions.assertEquals(fiatCurrencies.get("USD"), BigDecimal.valueOf(45.67));
-                    Assertions.assertEquals(fiatCurrencies.get("EUR"), BigDecimal.valueOf(56.78));
-                    var cryptoCurrencies = result.getCrypto().stream()
-                            .collect(Collectors.toMap(
-                                    CurrenciesWebServiceResponse::getCurrency,
-                                    CurrenciesWebServiceResponse::getRate
-                            ));
-                    Assertions.assertEquals(cryptoCurrencies.get("BTC"), BigDecimal.valueOf(12345.67));
-                    Assertions.assertEquals(cryptoCurrencies.get("ETH"), BigDecimal.valueOf(234.56));
-                });
+                .value(this::assertDefaultCurrencies);
+    }
 
+    @Order(4)
+    @Test
+    void testRequestFailShouldReturnFromDb() {
+        mockWebServer.setDispatcher(getDispatcherForTwoPath(
+                new MockResponse().setResponseCode(500),
+                new MockResponse().setResponseCode(500)
+        ));
+
+        webTestClient.get()
+                .uri(ENDPOINT)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(CurrenciesRateResponse.class)
+                .value(this::assertDefaultCurrencies);
+    }
+
+    private Dispatcher getDispatcherForTwoPath(MockResponse fiatResponse, MockResponse cryptoResponse) {
+        return new Dispatcher() {
+            @NotNull
+            @Override
+            public MockResponse dispatch(@NotNull RecordedRequest recordedRequest) {
+                if (recordedRequest.getPath().equals(fiatPath)) {
+                    return fiatResponse;
+                } else if (recordedRequest.getPath().equals(cryptoPath)) {
+                    return cryptoResponse;
+                } else {
+                    return new MockResponse().setResponseCode(404);
+                }
+            }
+        };
+    }
+
+    private void assertDefaultCurrencies(CurrenciesRateResponse result) {
+        Assertions.assertEquals(result.getFiat().size(), 2);
+        Assertions.assertEquals(result.getCrypto().size(), 2);
+        var fiatCurrencies = result.getFiat().stream()
+                .collect(Collectors.toMap(
+                        CurrenciesWebServiceResponse::getCurrency,
+                        CurrenciesWebServiceResponse::getRate));
+        Assertions.assertEquals(fiatCurrencies.get("USD"), BigDecimal.valueOf(45.67));
+        Assertions.assertEquals(fiatCurrencies.get("EUR"), BigDecimal.valueOf(56.78));
+        var cryptoCurrencies = result.getCrypto().stream()
+                .collect(Collectors.toMap(
+                        CurrenciesWebServiceResponse::getCurrency,
+                        CurrenciesWebServiceResponse::getRate
+                ));
+        Assertions.assertEquals(cryptoCurrencies.get("BTC"), BigDecimal.valueOf(12345.67));
+        Assertions.assertEquals(cryptoCurrencies.get("ETH"), BigDecimal.valueOf(234.56));
     }
 
 }
