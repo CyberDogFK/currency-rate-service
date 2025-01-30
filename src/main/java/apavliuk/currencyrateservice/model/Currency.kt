@@ -5,7 +5,7 @@ import org.springframework.data.relational.core.mapping.Column
 import org.springframework.data.relational.core.mapping.Table
 
 @Table
-class Currency(
+data class Currency(
     @Id
     val id: Long? = null,
     val name: String,

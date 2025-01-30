@@ -5,7 +5,7 @@ import org.springframework.data.relational.core.mapping.Table
 import java.math.BigDecimal
 
 @Table
-class HistoricalRate (
+data class HistoricalRate (
     @Id
     val id: Long? = null,
     val currency: Currency,

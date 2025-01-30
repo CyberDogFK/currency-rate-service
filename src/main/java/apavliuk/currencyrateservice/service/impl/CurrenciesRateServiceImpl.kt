@@ -90,12 +90,14 @@ class CurrenciesRateServiceImpl(
             })
             .flatMap {
                 logger.info("Saving historical rate of ${it.name}")
-                historicalRateRepository.save(
+                val rate =
                     HistoricalRate(
                         currency = it,
                         timestamp = unixTimestamp,
                         rate = response.rate
                     )
+                historicalRateRepository.save(
+                    rate
                 )
             }
 }
