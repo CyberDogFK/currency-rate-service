@@ -1,6 +1,6 @@
 package apavliuk.currencyrateservice.dto
 
-class CurrenciesRateResponse(
+data class CurrenciesRateResponse(
     val fiat: List<CurrenciesWebServiceResponse>,
     val crypto: List<CurrenciesWebServiceResponse>
 )

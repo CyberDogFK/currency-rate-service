@@ -34,13 +34,14 @@ this app will work on port 8085
 ### Start application
 - Using Docker
 
-
-
 1. Download repo to you computer: </br>
 `git clone git@github.com:CyberDogFK/currency-rate-service.git`
-2. Application uses environment variables to store properties for application
-   So, please, create `.evn-local` file in root directory, following by example from `.env-example` and add DB properties there </br>
-   Then run: </br>`export $(cat .env-local | xargs)`</br> to add properties to environment
+
+[//]: # (2. Application uses environment variables to store properties for application)
+
+[//]: # (   So, please, create `.evn-local` file in root directory, following by example from `.env-example` and add DB properties there </br>)
+
+[//]: # (   Then run: </br>`export $&#40;cat .env-local | xargs&#41;`</br> to add properties to environment)
 3. Use
 ````
 ./mvnw clean package
@@ -58,13 +59,24 @@ docker-compose up
 2. Create database in PostgreSQL, recommend name `currency_rate`
 3. Application uses environment variables to store properties for application
 So, please, create `.evn-local` file in root directory, following by example from `.env-example` and add DB properties there </br>
-Then run: </br>`export $(cat .env-local | xargs)`</br> to add properties to environment
+Then run: </br>`export $(cat .env-local | xargs)`</br> to add properties to environment. </br> You can skip test variables.
 4. Use in command line, from directory.
 ```
 ./mvnw clean package
 ./mvnw spring-boot:run
 ```
 5. Application by default uses 8085 port, send request: `curl localhost:8085/currency-rates`
+
+## Test application
+
+1. Create database in PostgreSQL, recommend name `currency_rate_test`
+2. Application uses environment variables to store properties for application
+   So, please, create `.evn-local` file in root directory, following by example from `.env-example` and add DB properties there </br>
+   Then run: </br>`export $(cat .env-local | xargs)`</br> to add properties to environment. </br> You can skip prod variables
+3. Run command
+```
+./mvnw -Dmaven.test.skip=false clean package
+```
 
 ## Technologies
 
