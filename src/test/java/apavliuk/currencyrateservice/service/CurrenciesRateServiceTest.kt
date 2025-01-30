@@ -112,11 +112,11 @@ class CurrenciesRateServiceTest {
     fun testServiceGetResponseFromServiceEmptyDB() {
         mockWebServer.dispatcher = object : Dispatcher() {
             override fun dispatch(request: RecordedRequest): MockResponse =
-                if (request.path.equals("/fiat-currency-rates")) {
+                if (request.path.equals(fiatPath)) {
                     MockResponse().setResponseCode(200)
                         .setBody(exampleResponseFiat)
                         .setHeader("Content-Type", "application/json")
-                } else if (request.path.equals("/crypto-currency-rates")) {
+                } else if (request.path.equals(cryptoPath)) {
                     MockResponse().setResponseCode(200)
                         .setBody(exampleResponseCrypto)
                         .setHeader("Content-Type", "application/json")
@@ -176,18 +176,4 @@ class CurrenciesRateServiceTest {
             BigDecimal.valueOf(12345.67)
         )
     }
-
-    //     - **Error (401):** Invalid API key
-    //  ```json
-    //    {
-    //      "error": "Invalid API key"
-    //    }
-    //    ```
-    //    - **Error (500):** Internal Server Error (20% chance)
-    //  ```json
-    //    {
-    //      "error": "Internal Server Error"
-    //    }
-
-
 }

@@ -2,6 +2,7 @@ package apavliuk.currencyrateservice;
 
 import apavliuk.currencyrateservice.dto.CurrenciesRateResponse;
 import apavliuk.currencyrateservice.dto.CurrenciesWebServiceResponse;
+import apavliuk.currencyrateservice.service.CurrenciesRateService;
 import apavliuk.currencyrateservice.service.impl.CurrenciesRateServiceImpl;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -26,7 +27,6 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.shaded.org.hamcrest.Matchers;
 
 // Integration tests here
 @Testcontainers
@@ -105,9 +105,25 @@ class CurrencyRateServiceApplicationTests {
                 .isEqualTo(expected);
     }
 
-    // add test where only one?
-
+    @Test
     @Order(3)
+    void testRequestOnlyOneResponseOkEmptyDb() {
+        mockWebServer.setDispatcher(getDispatcherForTwoPath(
+                new MockResponse().setResponseCode(401),
+                new MockResponse().setResponseCode(200)
+                        .setHeader("Content-Type", "application/json")
+                        .setBody(EXAMPLE_RESPONSE_CRYPTO)
+        ));
+
+        webTestClient.get()
+                .uri(ENDPOINT)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(CurrenciesRateResponse.class)
+                .value(this::assertDefaultCryptoCurrencies);
+    }
+
+    @Order(4)
     @Test
     void testRequestOkSaveToEmptyDb() {
         mockWebServer.setDispatcher(getDispatcherForTwoPath(
@@ -127,7 +143,7 @@ class CurrencyRateServiceApplicationTests {
                 .value(this::assertDefaultCurrencies);
     }
 
-    @Order(4)
+    @Order(5)
     @Test
     void testRequestFailShouldReturnFromDb() {
         mockWebServer.setDispatcher(getDispatcherForTwoPath(
@@ -159,22 +175,30 @@ class CurrencyRateServiceApplicationTests {
         };
     }
 
-    private void assertDefaultCurrencies(CurrenciesRateResponse result) {
-        Assertions.assertEquals(result.getFiat().size(), 2);
-        Assertions.assertEquals(result.getCrypto().size(), 2);
-        var fiatCurrencies = result.getFiat().stream()
-                .collect(Collectors.toMap(
-                        CurrenciesWebServiceResponse::getCurrency,
-                        CurrenciesWebServiceResponse::getRate));
-        Assertions.assertEquals(fiatCurrencies.get("USD"), BigDecimal.valueOf(45.67));
-        Assertions.assertEquals(fiatCurrencies.get("EUR"), BigDecimal.valueOf(56.78));
-        var cryptoCurrencies = result.getCrypto().stream()
+    private void assertDefaultCurrencies(CurrenciesRateResponse response) {
+        assertDefaultFiatCurrencies(response);
+        assertDefaultCryptoCurrencies(response);
+    }
+
+    private void assertDefaultCryptoCurrencies(CurrenciesRateResponse response) {
+        var cryptoCurrencies = response.getCrypto().stream()
                 .collect(Collectors.toMap(
                         CurrenciesWebServiceResponse::getCurrency,
                         CurrenciesWebServiceResponse::getRate
                 ));
         Assertions.assertEquals(cryptoCurrencies.get("BTC"), BigDecimal.valueOf(12345.67));
         Assertions.assertEquals(cryptoCurrencies.get("ETH"), BigDecimal.valueOf(234.56));
+    }
+
+    private void assertDefaultFiatCurrencies(CurrenciesRateResponse response) {
+        Assertions.assertEquals(response.getFiat().size(), 2);
+        Assertions.assertEquals(response.getCrypto().size(), 2);
+        var fiatCurrencies = response.getFiat().stream()
+                .collect(Collectors.toMap(
+                        CurrenciesWebServiceResponse::getCurrency,
+                        CurrenciesWebServiceResponse::getRate));
+        Assertions.assertEquals(fiatCurrencies.get("USD"), BigDecimal.valueOf(45.67));
+        Assertions.assertEquals(fiatCurrencies.get("EUR"), BigDecimal.valueOf(56.78));
     }
 
 }

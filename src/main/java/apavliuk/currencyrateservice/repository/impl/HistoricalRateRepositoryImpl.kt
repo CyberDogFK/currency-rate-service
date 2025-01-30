@@ -14,7 +14,9 @@ class HistoricalRateRepositoryImpl(
 ): HistoricalRateRepository {
 
     override fun save(historicalRate: HistoricalRate): Mono<HistoricalRate> =
-        databaseClient.sql("INSERT INTO historical_rate (currency_id, timestamp, rate) VALUES (:currency_id, :timestamp, :rate) RETURNING id")
+        databaseClient.sql(
+            "INSERT INTO historical_rate (currency_id, timestamp, rate)" +
+                    " VALUES (:currency_id, :timestamp, :rate) RETURNING id")
             .bind("currency_id", historicalRate.currency.id!!)
             .bind("timestamp", historicalRate.timestamp)
             .bind("rate", historicalRate.rate)

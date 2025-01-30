@@ -13,7 +13,8 @@ class CurrencyRepositoryImpl(
     private val databaseClient: DatabaseClient
 ): CurrencyRepository {
     override fun findCurrencyByName(name: String): Mono<Currency> =
-        databaseClient.sql("SELECT c.id c_id, c.name c_name, c.type_id c_type_id, ct.id ct_id, ct.name ct_name FROM currency c " +
+        databaseClient.sql(
+            "SELECT c.id c_id, c.name c_name, c.type_id c_type_id, ct.id ct_id, ct.name ct_name FROM currency c " +
             "inner join currency_type ct on c.type_id = ct.id " +
             "where c.name=:name limit 1")
         .bind("name", name)
