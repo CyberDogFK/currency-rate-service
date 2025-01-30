@@ -22,7 +22,7 @@ class CurrenciesRateServiceImpl(
     private val webClient: WebClient,
     private val currencyRepository: CurrencyRepository,
     private val historicalRateRepository: HistoricalRateRepository,
-): CurrenciesRateService {
+) : CurrenciesRateService {
     enum class PreparedCurrencyType(val type: CurrencyType, val urlPath: String) {
         Fiat(CurrencyType(1, "fiat"), "/fiat-currency-rates"),
         Crypto(CurrencyType(2, "crypto"), "/crypto-currency-rates")
@@ -41,13 +41,12 @@ class CurrenciesRateServiceImpl(
             .toEpochSecond()
 
         val fiatCurrencyRate = requestCurrencyRates(fiatCurrency.urlPath)
-            .flatMap { saveCurrencyFromResponse(it, fiatCurrency.type
-                , unixTimestamp) }
+            .flatMap { saveCurrencyFromResponse(it, fiatCurrency.type, unixTimestamp) }
             .switchIfEmpty(getFinalRateForCurrencyType(fiatCurrency.type))
             .collect(Collectors.toList())
 
         val cryptoCurrencyRates = requestCurrencyRates(cryptoCurrency.urlPath)
-            .flatMap { saveCurrencyFromResponse(it, cryptoCurrency.type, unixTimestamp)}
+            .flatMap { saveCurrencyFromResponse(it, cryptoCurrency.type, unixTimestamp) }
             .switchIfEmpty(getFinalRateForCurrencyType(cryptoCurrency.type))
             .collect(Collectors.toList())
 
@@ -55,8 +54,8 @@ class CurrenciesRateServiceImpl(
             CurrenciesRateResponse(
                 fiat = f.map { CurrenciesWebServiceResponse(it.currency.name, it.rate) },
                 crypto = c.map { CurrenciesWebServiceResponse(it.currency.name, it.rate) },
-                )
-            }
+            )
+        }
     }
 
     private fun getFinalRateForCurrencyType(currencyType: CurrencyType): Flux<HistoricalRate> =
@@ -67,27 +66,36 @@ class CurrenciesRateServiceImpl(
             }
         }
 
-    private fun requestCurrencyRates(path: String): Flux<CurrenciesWebServiceResponse> =
-        webClient.post()
+    private fun requestCurrencyRates(path: String): Flux<CurrenciesWebServiceResponse> {
+        logger.info("Requesting currency rates from path: $path")
+        return webClient.get()
             .uri { uriBuilder -> uriBuilder.path(path).build() }
             .retrieve()
             .bodyToFlux(CurrenciesWebServiceResponse::class.java)
             .onErrorResume {
-                logger.warn("Error, fallback to empty list", it)
+                logger.warn("Error making request to $path, fallback to empty list: ${it.message}")
                 Mono.empty()
             }
+    }
 
-    private fun saveCurrencyFromResponse(response: CurrenciesWebServiceResponse, type: CurrencyType, unixTimestamp: Long): Mono<HistoricalRate> =
+    private fun saveCurrencyFromResponse(
+        response: CurrenciesWebServiceResponse,
+        type: CurrencyType,
+        unixTimestamp: Long
+    ): Mono<HistoricalRate> =
         currencyRepository.findCurrencyByName(response.currency)
             .switchIfEmpty(Mono.defer {
-                // saving new currency
                 logger.info("Saving new currency `${response.currency}` of type `${type.name}`")
                 currencyRepository.save(Currency(name = response.currency, type = type))
             })
             .flatMap {
-                logger.info("Saving historical rate")
-                historicalRateRepository.save(HistoricalRate(currency = it,
-                    timestamp = unixTimestamp,
-                    rate = response.rate))
+                logger.info("Saving historical rate of ${it.name}")
+                historicalRateRepository.save(
+                    HistoricalRate(
+                        currency = it,
+                        timestamp = unixTimestamp,
+                        rate = response.rate
+                    )
+                )
             }
 }
