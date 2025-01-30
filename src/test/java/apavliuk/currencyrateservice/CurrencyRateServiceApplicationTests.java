@@ -2,7 +2,6 @@ package apavliuk.currencyrateservice;
 
 import apavliuk.currencyrateservice.dto.CurrenciesRateResponse;
 import apavliuk.currencyrateservice.dto.CurrenciesWebServiceResponse;
-import apavliuk.currencyrateservice.service.CurrenciesRateService;
 import apavliuk.currencyrateservice.service.impl.CurrenciesRateServiceImpl;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -26,10 +25,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
 // Integration tests here
-@Testcontainers
 @ActiveProfiles("test")
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -63,8 +60,6 @@ class CurrencyRateServiceApplicationTests {
     private final String cryptoPath = CurrenciesRateServiceImpl.PreparedCurrencyType.Crypto.getUrlPath();
 
     private MockWebServer mockWebServer;
-//    @MockitoSpyBean
-//    private WebClient webClient;
     @Autowired
     private CurrenciesRateServiceImpl currenciesRateService;
     @Autowired
@@ -186,13 +181,13 @@ class CurrencyRateServiceApplicationTests {
                         CurrenciesWebServiceResponse::getCurrency,
                         CurrenciesWebServiceResponse::getRate
                 ));
-        Assertions.assertEquals(cryptoCurrencies.get("BTC"), BigDecimal.valueOf(12345.67));
-        Assertions.assertEquals(cryptoCurrencies.get("ETH"), BigDecimal.valueOf(234.56));
+        Assertions.assertEquals(BigDecimal.valueOf(12345.67), cryptoCurrencies.get("BTC"));
+        Assertions.assertEquals(BigDecimal.valueOf(234.56), cryptoCurrencies.get("ETH"));
     }
 
     private void assertDefaultFiatCurrencies(CurrenciesRateResponse response) {
-        Assertions.assertEquals(response.getFiat().size(), 2);
-        Assertions.assertEquals(response.getCrypto().size(), 2);
+        Assertions.assertEquals(2, response.getFiat().size());
+        Assertions.assertEquals(2, response.getCrypto().size());
         var fiatCurrencies = response.getFiat().stream()
                 .collect(Collectors.toMap(
                         CurrenciesWebServiceResponse::getCurrency,

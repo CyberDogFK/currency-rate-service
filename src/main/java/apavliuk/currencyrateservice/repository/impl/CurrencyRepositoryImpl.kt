@@ -42,4 +42,8 @@ class CurrencyRepositoryImpl(
                 Currency(row.get("id", Long::class.java), row.get("name", String::class.java)!!,
                     currencyType)
             }.all()
+
+    override fun deleteAll(): Mono<Void> =
+        databaseClient.sql("DELETE FROM currency")
+            .then()
 }

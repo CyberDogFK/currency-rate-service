@@ -73,7 +73,8 @@ Then run: </br>`export $(cat .env-local | xargs)`</br> to add properties to envi
 2. Application uses environment variables to store properties for application
    So, please, create `.evn-local` file in root directory, following by example from `.env-example` and add DB properties there </br>
    Then run: </br>`export $(cat .env-local | xargs)`</br> to add properties to environment. </br> You can skip prod variables
-3. Run command
+3. Start docker, which will be used for repository tests
+4. Run command
 ```
 ./mvnw -Dmaven.test.skip=false clean package
 ```
