@@ -1,14 +1,11 @@
 package apavliuk.currencyrateservice.service
 
-import apavliuk.currencyrateservice.dto.CurrenciesWebServiceResponse
 import apavliuk.currencyrateservice.model.Currency
 import apavliuk.currencyrateservice.model.CurrencyType
 import apavliuk.currencyrateservice.model.HistoricalRate
 import apavliuk.currencyrateservice.repository.CurrencyRepository
 import apavliuk.currencyrateservice.repository.HistoricalRateRepository
 import apavliuk.currencyrateservice.service.impl.CurrenciesRateServiceImpl
-import io.netty.handler.logging.LogLevel
-import io.netty.handler.logging.LoggingHandler
 import okhttp3.mockwebserver.Dispatcher
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
@@ -18,38 +15,25 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import org.mockito.ArgumentMatcher
-import org.mockito.ArgumentMatchers
-import org.mockito.InjectMocks
 import org.mockito.Mock
 import org.mockito.MockedStatic
 import org.mockito.Mockito
+import org.mockito.junit.jupiter.MockitoSettings
 import org.slf4j.LoggerFactory
-import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient
-import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
-import org.springframework.http.client.reactive.ClientHttpConnector
-import org.springframework.http.client.reactive.ReactorClientHttpConnector
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.web.reactive.function.client.ClientRequest
 import org.springframework.web.reactive.function.client.ClientResponse
-import org.springframework.web.reactive.function.client.ExchangeFilterFunction
 import org.springframework.web.reactive.function.client.ExchangeFunction
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import reactor.netty.http.client.HttpClient
 import java.math.BigDecimal
-import java.net.URI
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
 
 @ExtendWith(SpringExtension::class)
-//@WebFluxTest(CurrenciesRateServiceImpl::class, Web)
-//@AutoConfigureWebTestClient
 class CurrenciesRateServiceTest {
     companion object {
         // GET `/fiat-currency-rates`
@@ -81,41 +65,24 @@ class CurrenciesRateServiceTest {
         """.trimIndent()
 
         private val logger = LoggerFactory.getLogger(CurrenciesRateServiceImpl::class.java)
+
+        private val fiatPath = CurrenciesRateServiceImpl.PreparedCurrencyType.Fiat.urlPath
+        private val cryptoPath = CurrenciesRateServiceImpl.PreparedCurrencyType.Crypto.urlPath
     }
 
     private lateinit var currenciesRateService: CurrenciesRateServiceImpl
-
     @Mock
     private lateinit var currencyRepository: CurrencyRepository
     @Mock
     private lateinit var historicalRateRepository: HistoricalRateRepository
-
-    @Mock
-    private lateinit var exchangeFunction: ExchangeFunction
-
-    private val mockWebServer: MockWebServer = MockWebServer()
-
-
+    private lateinit var mockWebServer: MockWebServer
     private fun <T> any(type: Class<T>): T = Mockito.any<T>(type)
-
-    val fiatPath = CurrenciesRateServiceImpl.PreparedCurrencyType.Fiat.urlPath
-    val cryptoPath = CurrenciesRateServiceImpl.PreparedCurrencyType.Crypto.urlPath
 
     @BeforeEach
     fun init() {
-//        val baseHttpClient = HttpClient.create()
-//            .doOnRequest { request, conn ->
-//                conn.addHandlerFirst(LoggingHandler(LogLevel.INFO))
-//            }
-
+        mockWebServer = MockWebServer()
         val webClient = WebClient.builder()
             .baseUrl(mockWebServer.url("/").toString())
-//            .exchangeFunction(exchangeFunction)
-//            .clientConnector(ReactorClientHttpConnector(baseHttpClient))
-//            .filters { exchangeFilterFunctions -> {
-//            exchangeFilterFunctions.add(logRequest());
-////            exchangeFilterFunctions.add(logResponse());
-//        }}
             .build()
 
         currenciesRateService = CurrenciesRateServiceImpl(
@@ -130,28 +97,10 @@ class CurrenciesRateServiceTest {
         mockWebServer.shutdown()
     }
 
-    fun logRequest(): ExchangeFilterFunction {
-        return ExchangeFilterFunction.ofRequestProcessor{clientRequest ->
-            if (true) {
-                val sb = StringBuilder("Request: \n")
-                //append clientRequest method and url
-                clientRequest
-                    .headers()
-                    .forEach{(name, values) -> values.forEach{value -> /* append header key/value */}}
-                logger.debug(sb.toString())
-            }
-            Mono.just(clientRequest);
-        }
-    }
-
     @Test
     fun testEmptyResponseFromServiceAndDb() {
-        val fiatPath = CurrenciesRateServiceImpl.PreparedCurrencyType.Fiat.urlPath
-        val cryptoPath = CurrenciesRateServiceImpl.PreparedCurrencyType.Crypto.urlPath
-//
-        Mockito.`when`(exchangeFunction.exchange(Mockito.any(ClientRequest::class.java)))
-            .thenReturn(Mono.just(ClientResponse.create(HttpStatus.INTERNAL_SERVER_ERROR)
-                .build()))
+        mockWebServer.enqueue(MockResponse().setResponseCode(500))
+        mockWebServer.enqueue(MockResponse().setResponseCode(500))
 
         Mockito.`when`(currencyRepository.findCurrencyByName(any(String::class.java)))
             .thenReturn(Mono.empty<Currency>())
@@ -201,7 +150,6 @@ class CurrenciesRateServiceTest {
             .thenReturn(Mono.just(eth))
 
         val localDateTime: MockedStatic<LocalDateTime> = Mockito.mockStatic<LocalDateTime>(LocalDateTime::class.java)
-//        val zonedDateTime: MockedStatic<ZonedDateTime> = Mockito.mockStatic<ZonedDateTime>(ZonedDateTime::class.java)
         val mockLocalDateTime = Mockito.mock(LocalDateTime::class.java)
         val mockZonedDateTime = Mockito.mock(ZonedDateTime::class.java)
         localDateTime.`when`<LocalDateTime> { LocalDateTime.now() }.thenReturn(mockLocalDateTime)
@@ -217,8 +165,6 @@ class CurrenciesRateServiceTest {
             .thenReturn(Mono.just(HistoricalRate(3, btc, 1, BigDecimal.valueOf(12345.67))))
         Mockito.`when`(historicalRateRepository.save(HistoricalRate(null, eth, 1L, BigDecimal.valueOf(234.56))))
             .thenReturn(Mono.just(HistoricalRate(4, eth, 1, BigDecimal.valueOf(234.56))))
-//        Mockito.`when`(historicalRateRepository.save(any(HistoricalRate::class.java)))
-//            .thenReturn(Mono.just(HistoricalRate(0, usd, 0, BigDecimal.ZERO)))
 
         val result = currenciesRateService.requestCurrencies().block()!!
         logger.info(Mockito.mockingDetails(historicalRateRepository).printInvocations())
