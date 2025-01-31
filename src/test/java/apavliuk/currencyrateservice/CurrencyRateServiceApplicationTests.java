@@ -86,7 +86,7 @@ class CurrencyRateServiceApplicationTests {
 
     @Order(2)
     @Test
-    void testRequest505EmptyDb() {
+    void testRequest500EmptyDb() {
         mockWebServer.enqueue(new MockResponse().setResponseCode(500));
         mockWebServer.enqueue(new MockResponse().setResponseCode(500));
 

@@ -72,7 +72,7 @@ Then run: </br>`export $(cat .env-local | xargs)`</br> to add properties to envi
 1. Create database in PostgreSQL, recommend name `currency_rate_test`
 2. Application uses environment variables to store properties for application
    So, please, create `.evn-local` file in root directory, following by example from `.env-example` and add DB properties there </br>
-   Then run: </br>`export $(cat .env-local | xargs)`</br> to add properties to environment. </br> You can skip prod variables
+   Then run: </br>`export $(cat .env-local | xargs)`</br> to add properties to environment. </br> You can skip prod variables </br> <b> Please, for testing use clean database </b>
 3. Start docker, which will be used for repository tests
 4. Run command
 ```

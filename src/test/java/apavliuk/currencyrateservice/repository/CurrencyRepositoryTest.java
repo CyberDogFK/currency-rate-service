@@ -57,7 +57,6 @@ public class CurrencyRepositoryTest {
         currencyRepository.deleteAll().block();
     }
 
-
     @Test
     void testSaveQuery() {
         var currency = new Currency(null, "USD",
