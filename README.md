@@ -37,18 +37,9 @@ this app will work on port 8085
 1. Download repo to you computer: </br>
 `git clone git@github.com:CyberDogFK/currency-rate-service.git`
 
-[//]: # (2. Application uses environment variables to store properties for application)
-
-[//]: # (   So, please, create `.evn-local` file in root directory, following by example from `.env-example` and add DB properties there </br>)
-
-[//]: # (   Then run: </br>`export $&#40;cat .env-local | xargs&#41;`</br> to add properties to environment)
 3. Use
 ````
-./mvnw clean package
-````
-4. Use, and wait booting
-````
-docker-compose up
+./script/deploy_to_docker.sh
 ````
 5. Application will be available on port 6868, send request: `curl localhost:6868/currency-rates`
 
@@ -59,11 +50,9 @@ docker-compose up
 2. Create database in PostgreSQL, recommend name `currency_rate`
 3. Application uses environment variables to store properties for application
 So, please, create `.evn-local` file in root directory, following by example from `.env-example` and add DB properties there </br>
-Then run: </br>`export $(cat .env-local | xargs)`</br> to add properties to environment. </br> You can skip test variables.
-4. Use in command line, from directory.
+4. Use in command line.
 ```
-./mvnw clean package
-./mvnw spring-boot:run
+./script/local_start.sh
 ```
 5. Application by default uses 8085 port, send request: `curl localhost:8085/currency-rates`
 
@@ -72,11 +61,17 @@ Then run: </br>`export $(cat .env-local | xargs)`</br> to add properties to envi
 1. Create database in PostgreSQL, recommend name `currency_rate_test`
 2. Application uses environment variables to store properties for application
    So, please, create `.evn-local` file in root directory, following by example from `.env-example` and add DB properties there </br>
-   Then run: </br>`export $(cat .env-local | xargs)`</br> to add properties to environment. </br> You can skip prod variables </br> <b> Please, for testing use clean database </b>
 3. Start docker, which will be used for repository tests
 4. Run command
 ```
-./mvnw -Dmaven.test.skip=false clean package
+./script/run_tests.sh
+```
+
+#### Troubleshooting
+
+If script return error `permission denied`, run this command to give permission for script to execute
+```
+chmod +x {script_file}
 ```
 
 ## Technologies
