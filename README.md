@@ -37,11 +37,11 @@ this app will work on port 8085
 1. Download repo to you computer: </br>
 `git clone git@github.com:CyberDogFK/currency-rate-service.git`
 
-3. Use
+2. Use
 ````
 ./script/deploy_to_docker.sh
 ````
-5. Application will be available on port 6868, send request: `curl localhost:6868/currency-rates`
+3. Application will be available on port 6868, send request: `curl localhost:6868/currency-rates`
 
 - Without Docker
 
