@@ -9,7 +9,7 @@ fi
 
 export $(cat .env-local | xargs)
 
-echo "${DB_USER}"
+./mvnw clean package
 
 ./mvnw liquibase:update \
 -Dliquibase.url="jdbc:postgresql://${DB_TEST_URL}" \
