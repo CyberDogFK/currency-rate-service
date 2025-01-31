@@ -62,7 +62,7 @@ class CurrenciesRateServiceImpl(
         Flux.defer {
             val currencies = currencyRepository.findCurrencyByType(currencyType)
             currencies.flatMap { c ->
-                historicalRateRepository.finaLastRateForCurrency(c)
+                historicalRateRepository.findLastRateForCurrency(c)
             }
         }
 

@@ -44,6 +44,6 @@ class CurrencyRepositoryImpl(
             }.all()
 
     override fun deleteAll(): Mono<Void> =
-        databaseClient.sql("DELETE FROM currency")
+        databaseClient.sql("TRUNCATE currency RESTART IDENTITY CASCADE")
             .then()
 }

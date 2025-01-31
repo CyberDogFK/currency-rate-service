@@ -23,8 +23,8 @@ import reactor.test.StepVerifier;
 @ExtendWith(SpringExtension.class)
 public class CurrencyRepositoryTest {
     @Container
-    private static PostgreSQLContainer postgreSQLContainer =
-            new PostgreSQLContainer("postgres:latest");
+    private static final PostgreSQLContainer<?> postgreSQLContainer =
+            new PostgreSQLContainer<>("postgres:latest");
 
     @DynamicPropertySource
     static void setProperties(DynamicPropertyRegistry registry) {
@@ -33,23 +33,15 @@ public class CurrencyRepositoryTest {
                         postgreSQLContainer.getFirstMappedPort() + "/" +
                         postgreSQLContainer.getDatabaseName()
         );
-        registry.add("spring.r2dbc.username", () ->
-                postgreSQLContainer.getUsername()
-        );
-        registry.add("spring.r2dbc.password", () ->
-                postgreSQLContainer.getPassword()
-        );
+        registry.add("spring.r2dbc.username", postgreSQLContainer::getUsername);
+        registry.add("spring.r2dbc.password", postgreSQLContainer::getPassword);
         registry.add("spring.liquibase.url", () ->
                 "jdbc:postgresql://" + postgreSQLContainer.getHost() + ":" +
                         postgreSQLContainer.getFirstMappedPort() + "/" +
                         postgreSQLContainer.getDatabaseName()
         );
-        registry.add("spring.liquibase.user", () ->
-                postgreSQLContainer.getUsername()
-        );
-        registry.add("spring.liquibase.password", () ->
-                postgreSQLContainer.getPassword()
-        );
+        registry.add("spring.liquibase.user", postgreSQLContainer::getUsername);
+        registry.add("spring.liquibase.password", postgreSQLContainer::getPassword);
     }
 
     @Autowired

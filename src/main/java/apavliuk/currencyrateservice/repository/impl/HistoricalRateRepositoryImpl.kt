@@ -30,7 +30,7 @@ class HistoricalRateRepositoryImpl(
                     )
             }.one()
 
-    override fun finaLastRateForCurrency(currency: Currency): Mono<HistoricalRate> =
+    override fun findLastRateForCurrency(currency: Currency): Mono<HistoricalRate> =
         databaseClient.sql("SELECT * from historical_rate where currency_id=:currency_id order by timestamp desc limit 1")
             .bind("currency_id", currency.id!!)
             .map { row, metadata ->
@@ -41,4 +41,8 @@ class HistoricalRateRepositoryImpl(
                     row.get("rate", BigDecimal::class.java)!!,
                 )
             }.one()
+
+    override fun deleteAll(): Mono<Void> =
+        databaseClient.sql("TRUNCATE historical_rate RESTART IDENTITY CASCADE")
+            .then()
 }

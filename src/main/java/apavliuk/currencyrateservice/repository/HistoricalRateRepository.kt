@@ -7,5 +7,7 @@ import reactor.core.publisher.Mono
 interface HistoricalRateRepository {
     fun save(historicalRate: HistoricalRate): Mono<HistoricalRate>
 
-    fun finaLastRateForCurrency(currency: Currency): Mono<HistoricalRate>
+    fun findLastRateForCurrency(currency: Currency): Mono<HistoricalRate>
+
+    fun deleteAll(): Mono<Void>
 }
